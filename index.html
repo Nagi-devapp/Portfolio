@@ -538,7 +538,7 @@
             controls.autoRotate = true;
             controls.autoRotateSpeed = 2.0;
 
-            // Tech Keywords
+            // Tech Keywords (Three.js Removed)
             const skills = [
                 { name: "Unity", color: "#ffffff" }, { name: "C#", color: "#9b4f96" },
                 { name: "Python", color: "#3572A5" }, { name: "Maya", color: "#37A5CC" },
@@ -624,13 +624,17 @@
         let currentModelGroup = null;
         const loader = new GLTFLoader();
         
-        // 非同期でモデル読み込み
+        // 非同期でモデル読み込み（エラー表示強化版）
         function loadModelFile(type) {
             if (!modelViewerScene) return;
             
             // ローディング表示ON
             const indicator = document.getElementById('loading-indicator');
-            if(indicator) indicator.style.display = 'block';
+            if(indicator) {
+                indicator.style.display = 'block';
+                indicator.innerText = 'Loading...';
+                indicator.style.color = '#38bdf8'; // Cyan
+            }
 
             if (currentModelGroup) {
                 modelViewerScene.remove(currentModelGroup);
@@ -649,20 +653,51 @@
                     const size = box.getSize(new THREE.Vector3());
                     
                     const maxDim = Math.max(size.x, size.y, size.z);
-                    const scale = 5 / maxDim; // normalize to ~5 units
+                    const scale = 5 / maxDim; 
                     currentModelGroup.scale.setScalar(scale);
                     
-                    // Center pivot
                     currentModelGroup.position.sub(center.multiplyScalar(scale));
-                    currentModelGroup.position.y += Math.sin(Date.now() * 0.001) * 0.1; // slight float
+                    currentModelGroup.position.y += Math.sin(Date.now() * 0.001) * 0.1; 
+
+                    // --- COLOR CHANGE LOGIC ---
+                    currentModelGroup.traverse((child) => {
+                        if (child.isMesh) {
+                            // マテリアルが MeshStandardMaterial であれば色を変更
+                            // 変更したい色: メタリックなグレー (例: #888888)
+                            // ※もともとテクスチャがある場合は color を変更すると色味が乗算されます
+                            // テクスチャを維持したい場合は、colorプロパティを白(0xffffff)にするか、
+                            // 新しいマテリアルを割り当てずに既存のマテリアルのプロパティを調整してください。
+                            
+                            // 例: 全てを「ダークメタリック」な統一感のある見た目にする場合
+                            // child.material = new THREE.MeshStandardMaterial({
+                            //     color: 0x444444,
+                            //     roughness: 0.3,
+                            //     metalness: 0.8
+                            // });
+
+                            // 例: 既存のマテリアルを使いつつ、色だけ少し暗く/青くする
+                            // child.material.color.setHex(0xaaaaaa); 
+                        }
+                    });
+                    // ---------------------------
 
                     modelViewerScene.add(currentModelGroup);
                     if(indicator) indicator.style.display = 'none';
                 },
-                undefined, // onProgress
+                (xhr) => {
+                    // 進捗表示（オプション）
+                    // console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+                },
                 (error) => {
                     console.error('An error happened:', error);
-                    if(indicator) indicator.innerText = 'Error loading model';
+                    if(indicator) {
+                        // 画面にエラー内容を表示
+                        indicator.style.color = '#ef4444'; // Red
+                        indicator.innerText = 'Load Error: See Console';
+                        
+                        // CORSエラーや404エラーの可能性を示唆
+                        alert(`モデルの読み込みに失敗しました。\n\nファイル: ./models/${type}.glb\n\n【考えられる原因】\n1. VS Codeの「Live Server」等を使わず直接開いている (CORSエラー)\n2. ファイル名やフォルダ名が間違っている (404)\n3. GLBファイルが破損している`);
+                    }
                 }
             );
             
@@ -710,7 +745,7 @@
             modelViewerControls = new OrbitControls(modelViewerCamera, modelViewerRenderer.domElement);
             modelViewerControls.target.set(0, 0, 0);
             modelViewerControls.enableDamping = true;
-            modelViewerControls.autoRotate = true;
+            modelViewerControls.autoRotate = false; // 回転停止
             modelViewerControls.autoRotateSpeed = 1.0;
 
             // Load initial model
@@ -864,7 +899,7 @@
                  galleryContainer.innerHTML = `<p class="text-xs text-slate-500 col-span-2 text-center py-4">No gallery images</p>`;
             }
 
-            // 3Dタブ & モデル切り替えUI
+            // 3Dタブの表示制御
             const viewSwitcher = document.getElementById('view-switcher-container');
             const modelSelector = document.getElementById('model-selector-container');
             
