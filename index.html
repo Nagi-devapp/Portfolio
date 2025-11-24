@@ -3,9 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matsuda Portfolio | Engineer & Creator</title>
+    <title>Portfolio | Creative Engineer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Three.js & OrbitControls CDN -->
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.154.0/examples/jsm/"
+        }
+      }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -27,14 +37,6 @@
             transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .reveal.active { opacity: 1; transform: translateY(0); }
-
-        /* 3D Tilt Card */
-        .tilt-card {
-            transform-style: preserve-3d;
-            transform: perspective(1000px);
-            transition: transform 0.1s ease-out;
-        }
-        .tilt-content { transform: translateZ(20px); }
 
         /* 背景装飾 */
         .blob {
@@ -80,6 +82,55 @@
             position: fixed; top: 0; left: 0; transform: translate(-50%, -50%);
             pointer-events: none; z-index: 9999; transition: opacity 0.3s;
         }
+
+        /* Three.js Canvas Container */
+        #tech-cloud-container {
+            width: 100%; height: 100%; min-height: 400px;
+            position: relative;
+        }
+        #model-viewer-canvas {
+            width: 100%; height: 100%;
+            outline: none;
+        }
+
+        /* 3D View Switcher Style */
+        .view-switcher {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+            padding: 4px;
+            display: flex;
+            gap: 4px;
+        }
+        .view-btn {
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            color: #94a3b8;
+        }
+        .view-btn.active {
+            background: #38bdf8;
+            color: #0f172a;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+        .view-btn:hover:not(.active) {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* 3D Tilt Card */
+        .tilt-card {
+            transform-style: preserve-3d;
+            transform: perspective(1000px);
+            transition: transform 0.1s ease-out;
+        }
+        .tilt-content { transform: translateZ(20px); }
     </style>
 </head>
 <body class="antialiased">
@@ -94,7 +145,7 @@
                     <i class="ph-fill ph-user text-3xl text-slate-400"></i>
                 </div>
             </div>
-            <h1 class="text-xl font-bold text-white tracking-tight">Matsuda Portfolio</h1>
+            <h1 class="text-xl font-bold text-white tracking-tight">Portfolio</h1>
             <p class="text-xs text-slate-400 mt-1">Engineer / Matsuda Lab</p>
         </div>
 
@@ -111,7 +162,7 @@
                 <a href="#contact" class="block px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors">Contact</a>
             </div>
         </nav>
-        <div class="text-xs text-slate-600 mt-auto">&copy; 2024 Matsuda.</div>
+        <div class="text-xs text-slate-600 mt-auto">&copy; 2024 Portfolio.</div>
     </aside>
 
     <!-- モバイルナビ -->
@@ -137,7 +188,7 @@
             
             <!-- Hero -->
             <header class="flex flex-col lg:flex-row items-center gap-12 mb-32 min-h-[60vh]">
-                <div class="lg:w-3/5 reveal">
+                <div class="lg:w-1/2 reveal">
                     <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-bold mb-6">
                         <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
                         Available for New Projects
@@ -154,13 +205,13 @@
                         <button onclick="switchView('resume')" class="px-8 py-3 border border-slate-700 text-white font-bold rounded-full hover:border-white transition-colors">Resume</button>
                     </div>
                 </div>
-                <div class="lg:w-2/5 w-full reveal" style="transition-delay: 0.1s;">
-                    <div class="aspect-square rounded-3xl bg-gradient-to-br from-slate-800 to-slate-900 border border-white/5 relative overflow-hidden flex items-center justify-center group tilt-card">
-                        <div class="absolute inset-0 bg-grid-slate-700/[0.1] bg-[length:20px_20px]"></div>
-                        <div class="tilt-content text-center">
-                            <i class="ph-duotone ph-cube text-9xl text-slate-700 group-hover:text-cyan-500 transition-colors duration-500"></i>
-                            <p class="mt-4 text-slate-500 font-mono text-sm">Interactive Portfolio</p>
-                        </div>
+                
+                <!-- Right Column: Interactive Tech Cloud (Three.js) -->
+                <div class="lg:w-1/2 w-full h-[400px] lg:h-[500px] reveal" style="transition-delay: 0.1s;">
+                    <div class="w-full h-full relative rounded-3xl bg-slate-900/50 border border-white/5 overflow-hidden flex items-center justify-center">
+                        <div class="absolute top-4 left-4 z-10 text-xs font-mono text-cyan-500 bg-black/50 px-2 py-1 rounded">Interactive Tech Stack</div>
+                        <!-- Three.js Container -->
+                        <div id="tech-cloud-container"></div>
                     </div>
                 </div>
             </header>
@@ -168,7 +219,7 @@
             <!-- Stats -->
             <section id="about" class="grid grid-cols-2 gap-6 mb-32 reveal max-w-2xl">
                 <div class="p-6 bg-slate-800/50 rounded-2xl border border-white/5">
-                    <div class="text-3xl font-bold text-white mb-1">8+</div>
+                    <div class="text-3xl font-bold text-white mb-1">9+</div>
                     <div class="text-xs text-slate-400 uppercase tracking-wider">Projects</div>
                 </div>
                 <div class="p-6 bg-slate-800/50 rounded-2xl border border-white/5">
@@ -245,23 +296,48 @@
         </div>
     </main>
 
-    <!-- 詳細モーダル (拡張版) -->
+    <!-- 詳細モーダル (拡張版: 3D Viewer対応) -->
     <div id="modal-overlay" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[100] modal-closed flex items-center justify-center p-4" onclick="closeModal()">
-        <div id="modal-content" class="bg-slate-800 border border-white/10 rounded-2xl w-full max-w-5xl max-h-[95vh] overflow-y-auto shadow-2xl relative" onclick="event.stopPropagation()">
+        <div id="modal-content" class="bg-slate-800 border border-white/10 rounded-2xl w-full max-w-6xl max-h-[95vh] overflow-y-auto shadow-2xl relative" onclick="event.stopPropagation()">
             <button onclick="closeModal()" class="fixed top-6 right-6 w-10 h-10 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-black/80 transition-colors z-50">
                 <i class="ph-bold ph-x"></i>
             </button>
             
             <div class="flex flex-col md:flex-row min-h-[500px]">
-                <!-- 左側：メインビジュアル & 情報 -->
-                <div class="md:w-1/2 p-0 flex flex-col">
-                    <div class="h-64 md:h-80 relative bg-black flex items-center justify-center border-b border-white/5">
+                <!-- 左側：ビューワーエリア (Image or 3D) -->
+                <div class="md:w-3/5 p-0 flex flex-col bg-black relative">
+                    
+                    <!-- 3D View Switcher (より目立つデザイン・位置に変更) -->
+                    <div id="view-switcher-container" class="absolute bottom-6 right-6 z-20 view-switcher hidden">
+                        <button id="tab-image" onclick="switchModalTab('image')" class="view-btn active">
+                            <i class="ph-fill ph-image"></i> Image
+                        </button>
+                        <button id="tab-3d" onclick="switchModalTab('3d')" class="view-btn">
+                            <i class="ph-fill ph-cube"></i> 3D View
+                        </button>
+                    </div>
+
+                    <!-- Image Container -->
+                    <div id="modal-view-image" class="w-full h-[400px] md:h-full flex items-center justify-center">
                         <img id="modal-img" src="" alt="Project" class="w-full h-full object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                         <div class="hidden w-full h-full absolute inset-0 flex-col items-center justify-center text-slate-500 text-sm">
                             <i class="ph-duotone ph-image text-3xl mb-2"></i>No Image
                         </div>
                     </div>
-                    <div class="p-8 flex-1 bg-slate-800/50">
+
+                    <!-- 3D Viewer Container -->
+                    <div id="modal-view-3d" class="w-full h-[400px] md:h-full hidden relative">
+                        <!-- Three.js Canvas will be inserted here -->
+                        <div id="model-viewer-container" class="w-full h-full"></div>
+                        <div class="absolute top-4 left-4 text-[10px] text-slate-500 font-mono pointer-events-none bg-black/50 px-2 py-1 rounded">
+                            Mouse: Rotate / Scroll: Zoom / RightClick: Pan
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右側：情報 & ギャラリー -->
+                <div class="md:w-2/5 p-0 flex flex-col border-l border-white/5 bg-slate-900">
+                    <div class="p-8 border-b border-white/5">
                          <div id="modal-tags" class="flex gap-2 mb-4"></div>
                         <h3 id="modal-title" class="text-2xl font-bold mb-1 text-white">Title</h3>
                         <p id="modal-sub" class="text-cyan-400 text-sm font-bold mb-6">Subtitle</p>
@@ -274,119 +350,310 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- 右側：アセットギャラリー (スクロール可能) -->
-                <div class="md:w-1/2 bg-slate-900/50 p-8 border-l border-white/5">
-                    <h4 class="text-white font-bold mb-4 flex items-center gap-2">
-                        <i class="ph-fill ph-images-square text-cyan-400"></i>
-                        制作アセット / ギャラリー
-                    </h4>
-                    <div id="modal-gallery" class="grid grid-cols-1 gap-6 overflow-y-auto max-h-[600px] pr-2">
-                        <!-- JSで画像リストを生成 -->
+                    
+                    <!-- ギャラリー -->
+                    <div class="p-8 bg-slate-900/50 flex-1 overflow-y-auto max-h-[300px]">
+                        <h4 class="text-white font-bold mb-4 flex items-center gap-2 text-sm">
+                            <i class="ph-fill ph-images-square text-cyan-400"></i>
+                            Gallery
+                        </h4>
+                        <div id="modal-gallery" class="grid grid-cols-2 gap-4">
+                            <!-- JSで画像リストを生成 -->
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
+    <!-- Main Logic Script (Type Module for Three.js imports) -->
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- データ定義 ---
         const projects = [
             {
-                id: 1,
-                title: "VR対応型 FPSゲーム",
-                category: "vr",
-                subtitle: "県プロコン「優良賞」受賞 / 代表作",
+                id: 1, title: "VR対応型 FPSゲーム", category: "vr", subtitle: "県プロコン「優良賞」受賞 / 代表作",
                 image: "./images/vr_fps.png",
                 desc: "Meta Quest 2を使用した、最大6人対戦可能なVRシューティング。ネットワーク対戦対応。",
                 tech: "VR酔い防止のためフレームレート維持を最優先。オブジェクトのローポリ化とカリング処理を独自調整。",
                 stack: ["Unity", "C#", "Photon", "Maya"],
                 gallery: [
-                    { src: "./images/fps_weapon_ar.jpg", caption: "Assault Rifle Model (Maya)" },
-                    { src: "./images/fps_weapon_hg.jpg", caption: "Handgun Model (Maya)" },
-                    { src: "./images/fps_stage_wire.jpg", caption: "Stage Wireframe" }
-                ]
+                    { src: "./images/fps_weapon_ar.jpg", caption: "Assault Rifle" },
+                    { src: "./images/fps_weapon_hg.jpg", caption: "Handgun" },
+                    { src: "./images/fps_stage_wire.jpg", caption: "Stage Wire" }
+                ],
+                has3D: true
             },
             {
-                id: 2,
-                title: "学内最短経路ナビ",
+                id: 8,
+                title: "駅〜大学間バス時刻表",
                 category: "app",
-                subtitle: "Python / 機械学習 / 学内ツール",
+                subtitle: "Unity WebGL / 便利ツール",
+                image: "./images/bus_schedule.png", // 画像がなければプレースホルダーが表示されます
+                desc: "大学の送迎バスの発車時刻をカウントダウン表示するツール。Unity WebGLでビルドし、ブラウザ上で手軽に確認できるようにしました。",
+                tech: "Unity (WebGL), C#, uGUI, CSV Parser",
+                stack: ["Unity", "C#", "WebGL"],
+                gallery: [],
+                has3D: false
+            },
+            {
+                id: 2, title: "学内最短経路ナビ", category: "app", subtitle: "Python / 機械学習",
                 image: "./images/python_nav.png",
                 desc: "キャンパス内の現在地と目的地を入力すると、混雑状況を予測して最短経路を提示。",
                 tech: "NetworkXでダイクストラ法を実装。scikit-learnで混雑予測モデルを作成。",
-                stack: ["Python", "scikit-learn", "NetworkX"]
+                stack: ["Python", "scikit-learn", "NetworkX"],
+                gallery: [], has3D: false
             },
             {
-                id: 3,
-                title: "MailTalk",
-                category: "app",
-                subtitle: "モバイルアプリ / UI UX",
+                id: 3, title: "MailTalk", category: "app", subtitle: "モバイルアプリ / UI UX",
                 image: "./images/mailtalk.png",
                 desc: "メールをチャット形式で表示・管理できるアプリ。",
                 tech: "IMAPプロトコル解析と独自パーサーによりメール本文をチャット風に整形。",
-                stack: ["Flutter", "Dart", "IMAP"]
+                stack: ["Flutter", "Dart", "IMAP"],
+                gallery: [], has3D: false
             },
             {
-                id: 4,
-                title: "PCペット育成ゲーム",
-                category: "vr",
-                subtitle: "デスクトップマスコット / 癒やし",
+                id: 4, title: "PCペット育成ゲーム", category: "vr", subtitle: "デスクトップマスコット",
                 image: "./images/pc_pet.png",
                 desc: "デスクトップ常駐型の癒やし系育成ゲーム。",
                 tech: "Windows API制御で背景透過ウィンドウを実現。生活に溶け込むインタラクティブコンテンツ。",
                 stack: ["Unity", "C#", "Windows API"],
-                gallery: []
+                gallery: [], has3D: false // falseに変更
             },
             {
-                id: 5,
-                title: "Wikipedia Golf",
-                category: "app",
-                subtitle: "Web Game / SPA",
+                id: 5, title: "Wikipedia Golf", category: "app", subtitle: "Web Game / SPA",
                 image: "./images/wiki_golf.png",
                 desc: "リンクを辿りゴールを目指すブラウザゲーム。",
                 tech: "MediaWiki APIと非同期通信を利用した動的DOM生成。",
-                stack: ["JavaScript", "HTML/CSS", "API"]
+                stack: ["JavaScript", "HTML/CSS", "API"],
+                gallery: [], has3D: false
             },
             {
-                id: 6,
-                title: "NewDealPoker",
-                category: "app",
-                subtitle: "Realtime WebSocket",
+                id: 6, title: "NewDealPoker", category: "app", subtitle: "Realtime WebSocket",
                 image: "./images/poker_game.png",
                 desc: "エクイティ分配導入の新ルールポーカー。",
                 tech: "WebSocketでのリアルタイム同期とサーバーサイド役判定。",
-                stack: ["Node.js", "WebSocket", "JS"]
+                stack: ["Node.js", "WebSocket", "JS"],
+                gallery: [], has3D: false
             },
             {
-                id: 7,
-                title: "地域助け合いアプリ",
-                category: "app",
-                subtitle: "Matching App",
+                id: 7, title: "地域助け合いアプリ", category: "app", subtitle: "Matching App",
                 image: "./images/region_app.png",
                 desc: "「手伝って」をマッチング。高齢者向けデザイン。",
                 tech: "Firebase Firestoreバックエンドとアクセシビリティ対応。",
-                stack: ["Flutter", "Firebase"]
+                stack: ["Flutter", "Firebase"],
+                gallery: [], has3D: false
             },
             {
-                id: 9,
-                title: "Classroom Twin",
-                category: "model",
-                subtitle: "Digital Twin",
+                id: 9, title: "Classroom", category: "model", subtitle: "Digital Twin",
                 image: "./images/classroom.png",
                 desc: "教室を寸法計測し3DCGで完全再現。",
                 tech: "Fusion 360のCADデータとMayaモデリングの統合。",
                 stack: ["Maya", "Fusion360"],
                 gallery: [
-                     { src: "./images/class_render.jpg", caption: "Rendered View" },
+                     { src: "./images/class_render.jpg", caption: "Render" },
                      { src: "./images/class_wire.jpg", caption: "Wireframe" }
-                ]
+                ],
+                has3D: false // falseに変更
             }
         ];
 
-        // --- Render Creative Grid ---
+        // グローバル公開
+        window.switchView = switchView;
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.switchModalTab = switchModalTab;
+
+        // ==========================================
+        // FEATURE 1: Tech Stack 3D Cloud (Hero Section)
+        // ==========================================
+        function initTechCloud() {
+            const container = document.getElementById('tech-cloud-container');
+            if (!container) return;
+
+            const scene = new THREE.Scene();
+            
+            const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 100);
+            camera.position.z = 20;
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            const controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.enableZoom = false;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 2.0;
+
+            // Tech Keywords (Three.js Removed)
+            const skills = [
+                { name: "Unity", color: "#ffffff" }, { name: "C#", color: "#9b4f96" },
+                { name: "Python", color: "#3572A5" }, { name: "Maya", color: "#37A5CC" },
+                { name: "Flutter", color: "#02569B" }, { name: "Dart", color: "#00B4AB" },
+                { name: "Blender", color: "#ea7600" }, { name: "Fusion360", color: "#F05F22" },
+                { name: "Git", color: "#F05032" }, { name: "Firebase", color: "#FFCA28" },
+                { name: "WebGL", color: "#990000" }
+            ];
+
+            const vector = new THREE.Vector3();
+            skills.forEach((skill, i) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 256;
+                canvas.height = 128;
+                
+                ctx.fillStyle = "rgba(0,0,0,0)";
+                ctx.fillRect(0,0, canvas.width, canvas.height);
+                
+                ctx.shadowColor = skill.color;
+                ctx.shadowBlur = 15;
+                
+                ctx.font = "bold 40px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillStyle = "white";
+                ctx.fillText(skill.name, 128, 64);
+                
+                ctx.strokeStyle = skill.color;
+                ctx.lineWidth = 4;
+                ctx.strokeRect(20, 20, 216, 88);
+
+                const texture = new THREE.CanvasTexture(canvas);
+                const material = new THREE.SpriteMaterial({ map: texture });
+                const sprite = new THREE.Sprite(material);
+
+                const phi = Math.acos(-1 + (2 * i) / skills.length);
+                const theta = Math.sqrt(skills.length * Math.PI) * phi;
+                
+                const r = 8;
+                sprite.position.x = r * Math.cos(theta) * Math.sin(phi);
+                sprite.position.y = r * Math.sin(theta) * Math.sin(phi);
+                sprite.position.z = r * Math.cos(phi);
+                
+                const scale = 3 + Math.random();
+                sprite.scale.set(scale, scale * 0.5, 1);
+
+                scene.add(sprite);
+            });
+
+            // Particles
+            const particlesGeom = new THREE.BufferGeometry();
+            const particlesCount = 200;
+            const posArray = new Float32Array(particlesCount * 3);
+            for(let i=0; i<particlesCount*3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 30;
+            }
+            particlesGeom.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            const particlesMat = new THREE.PointsMaterial({ size: 0.05, color: 0x38bdf8, transparent: true, opacity: 0.5 });
+            const particlesMesh = new THREE.Points(particlesGeom, particlesMat);
+            scene.add(particlesMesh);
+
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                const w = container.clientWidth;
+                const h = container.clientHeight;
+                renderer.setSize(w, h);
+                camera.aspect = w / h;
+                camera.updateProjectionMatrix();
+            });
+        }
+
+        // ==========================================
+        // FEATURE 2: 3D Model Viewer (Modal)
+        // ==========================================
+        let modelViewerRenderer, modelViewerScene, modelViewerCamera, modelViewerControls, modelViewerFrameId;
+        
+        function initModelViewer(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = ''; 
+
+            modelViewerScene = new THREE.Scene();
+            modelViewerScene.background = new THREE.Color(0x111827);
+            
+            const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
+            modelViewerScene.add(gridHelper);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            modelViewerScene.add(ambientLight);
+            
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(5, 10, 7);
+            modelViewerScene.add(dirLight);
+
+            // --- PRODEDURAL DEMO MODEL GENERATION ---
+            const group = new THREE.Group();
+            const geometryBody = new THREE.BoxGeometry(2, 3, 1.5);
+            const materialMain = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.3, metalness: 0.7 });
+            const body = new THREE.Mesh(geometryBody, materialMain);
+            body.position.y = 2.5;
+            group.add(body);
+
+            const geomHead = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+            const head = new THREE.Mesh(geomHead, materialMain);
+            head.position.y = 5;
+            group.add(head);
+
+            const geomRing = new THREE.TorusGeometry(3, 0.1, 16, 100);
+            const materialRing = new THREE.MeshBasicMaterial({ color: 0xa855f7, wireframe: true });
+            const ring = new THREE.Mesh(geomRing, materialRing);
+            ring.position.y = 3;
+            ring.rotation.x = Math.PI / 2;
+            group.add(ring);
+
+            modelViewerScene.add(group);
+            // -----------------------------------------
+
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+
+            modelViewerCamera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+            modelViewerCamera.position.set(8, 6, 8);
+            modelViewerCamera.lookAt(0, 3, 0);
+
+            modelViewerRenderer = new THREE.WebGLRenderer({ antialias: true });
+            modelViewerRenderer.setSize(w, h);
+            modelViewerRenderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(modelViewerRenderer.domElement);
+
+            modelViewerControls = new OrbitControls(modelViewerCamera, modelViewerRenderer.domElement);
+            modelViewerControls.target.set(0, 3, 0);
+            modelViewerControls.enableDamping = true;
+
+            function animateViewer() {
+                modelViewerFrameId = requestAnimationFrame(animateViewer);
+                group.rotation.y += 0.005;
+                ring.rotation.z -= 0.01;
+                ring.position.y = 3 + Math.sin(Date.now() * 0.002) * 0.2;
+                modelViewerControls.update();
+                modelViewerRenderer.render(modelViewerScene, modelViewerCamera);
+            }
+            animateViewer();
+        }
+
+        function disposeModelViewer() {
+            if (modelViewerFrameId) cancelAnimationFrame(modelViewerFrameId);
+            if (modelViewerRenderer) {
+                modelViewerRenderer.dispose();
+            }
+        }
+
+        // ==========================================
+        // UI Logic
+        // ==========================================
+        
         function renderCreative(filter = 'all') {
             const grid = document.getElementById('works-grid');
+            if(!grid) return;
             grid.innerHTML = '';
             const filtered = filter === 'all' ? projects : projects.filter(p => p.category === filter || (filter==='vr'&&p.category==='model'));
 
@@ -400,8 +667,11 @@
                 card.style.animation = `fadeIn 0.5s ease forwards ${index * 100}ms`;
                 card.onclick = () => openModal(p.id);
 
+                const badge = p.has3D ? `<div class="absolute top-2 right-2 bg-purple-600 text-white text-[10px] font-bold px-2 py-1 rounded z-10 shadow-lg">3D VIEW</div>` : '';
+
                 card.innerHTML = `
                     <div class="${height} w-full relative overflow-hidden bg-black">
+                        ${badge}
                         <img src="${p.image}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                         <div class="hidden w-full h-full absolute inset-0 flex items-center justify-center text-slate-600 bg-slate-900 text-sm">No Image</div>
@@ -421,9 +691,9 @@
             });
         }
 
-        // --- Render Resume ---
         function renderResume() {
             const list = document.getElementById('resume-list');
+            if(!list) return;
             list.innerHTML = projects.map(p => `
                 <div class="group flex items-center p-4 rounded-xl bg-slate-800/40 border border-white/5 hover:bg-slate-800 hover:border-cyan-500/30 transition-all cursor-pointer" onclick="openModal(${p.id})">
                     <div class="w-12 h-12 rounded-lg bg-slate-900 flex items-center justify-center mr-4 text-slate-500 group-hover:text-cyan-400 group-hover:bg-cyan-900/20 transition-colors">
@@ -440,7 +710,6 @@
             `).join('');
         }
 
-        // --- Switch View ---
         function switchView(mode) {
             const creative = document.getElementById('creative-view');
             const resume = document.getElementById('resume-view');
@@ -460,9 +729,12 @@
             }
         }
 
-        // --- Modal (Gallery Support) ---
+        // --- Modal Control ---
         const modalOverlay = document.getElementById('modal-overlay');
+        let currentProjectId = null;
+
         function openModal(id) {
+            currentProjectId = id;
             const p = projects.find(x => x.id === id);
             if (!p) return;
 
@@ -479,44 +751,67 @@
             document.getElementById('modal-tags').innerHTML = 
                 `<span class="px-2 py-1 rounded bg-cyan-500/20 text-cyan-400 text-xs font-bold uppercase">${p.category}</span>`;
 
-            // ギャラリー生成
             const galleryContainer = document.getElementById('modal-gallery');
             galleryContainer.innerHTML = '';
-            
             if (p.gallery && p.gallery.length > 0) {
                 p.gallery.forEach(item => {
                     const div = document.createElement('div');
-                    div.className = 'bg-black/50 rounded-xl overflow-hidden border border-white/5';
+                    div.className = 'bg-black/50 rounded-lg overflow-hidden border border-white/5 cursor-pointer hover:border-cyan-500 transition-colors';
                     div.innerHTML = `
-                        <div class="h-48 relative flex items-center justify-center bg-black">
-                             <img src="${item.src}" class="w-full h-full object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                             <div class="hidden w-full h-full absolute inset-0 flex-col items-center justify-center text-slate-600 text-xs">
-                                <i class="ph-duotone ph-image text-2xl mb-1"></i>No Image
+                        <div class="h-24 relative flex items-center justify-center bg-black">
+                             <img src="${item.src}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                             <div class="hidden w-full h-full absolute inset-0 flex-col items-center justify-center text-slate-600 text-[10px]">
+                                <i class="ph-duotone ph-image text-xl"></i>
                              </div>
-                        </div>
-                        <div class="p-3 bg-slate-800/80">
-                            <p class="text-xs text-slate-400 font-mono">${item.caption}</p>
                         </div>
                     `;
                     galleryContainer.appendChild(div);
                 });
             } else {
-                 galleryContainer.innerHTML = `
-                    <div class="h-full flex flex-col items-center justify-center text-slate-500 opacity-50 border-2 border-dashed border-slate-700 rounded-xl min-h-[200px]">
-                        <i class="ph-duotone ph-image-square text-4xl mb-2"></i>
-                        <span class="text-xs">No additional assets</span>
-                    </div>
-                 `;
+                 galleryContainer.innerHTML = `<p class="text-xs text-slate-500 col-span-2 text-center py-4">No gallery images</p>`;
             }
+
+            // 3Dタブの表示制御
+            const viewSwitcher = document.getElementById('view-switcher-container');
+            if (p.has3D) {
+                viewSwitcher.style.display = 'flex'; // flexに変更してデザイン維持
+            } else {
+                viewSwitcher.style.display = 'none';
+            }
+            // Reset Tab to Image
+            switchModalTab('image');
 
             modalOverlay.classList.remove('modal-closed');
             modalOverlay.classList.add('modal-open');
             document.body.style.overflow = 'hidden';
         }
+
         function closeModal() {
             modalOverlay.classList.remove('modal-open');
             modalOverlay.classList.add('modal-closed');
             document.body.style.overflow = '';
+            disposeModelViewer();
+        }
+
+        function switchModalTab(tab) {
+            const btnImage = document.getElementById('tab-image');
+            const btn3D = document.getElementById('tab-3d');
+            const viewImage = document.getElementById('modal-view-image');
+            const view3D = document.getElementById('modal-view-3d');
+
+            if (tab === 'image') {
+                btnImage.classList.add('active');
+                btn3D.classList.remove('active');
+                viewImage.classList.remove('hidden');
+                view3D.classList.add('hidden');
+                disposeModelViewer();
+            } else {
+                btn3D.classList.add('active');
+                btnImage.classList.remove('active');
+                viewImage.classList.add('hidden');
+                view3D.classList.remove('hidden');
+                requestAnimationFrame(() => { initModelViewer('model-viewer-container'); });
+            }
         }
 
         // --- Tilt Logic ---
@@ -559,8 +854,11 @@
         }, { threshold: 0.1 });
         document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
+        // INIT
+        initTechCloud();
         renderCreative();
         renderResume();
+
     </script>
 </body>
 </html>
