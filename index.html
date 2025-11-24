@@ -659,24 +659,15 @@
                     currentModelGroup.position.sub(center.multiplyScalar(scale));
                     currentModelGroup.position.y += Math.sin(Date.now() * 0.001) * 0.1; 
 
-                    // --- COLOR CHANGE LOGIC ---
+                    // --- COLOR CHANGE LOGIC (Make it Gray) ---
                     currentModelGroup.traverse((child) => {
                         if (child.isMesh) {
-                            // マテリアルが MeshStandardMaterial であれば色を変更
-                            // 変更したい色: メタリックなグレー (例: #888888)
-                            // ※もともとテクスチャがある場合は color を変更すると色味が乗算されます
-                            // テクスチャを維持したい場合は、colorプロパティを白(0xffffff)にするか、
-                            // 新しいマテリアルを割り当てずに既存のマテリアルのプロパティを調整してください。
-                            
-                            // 例: 全てを「ダークメタリック」な統一感のある見た目にする場合
-                            // child.material = new THREE.MeshStandardMaterial({
-                            //     color: 0x444444,
-                            //     roughness: 0.3,
-                            //     metalness: 0.8
-                            // });
-
-                            // 例: 既存のマテリアルを使いつつ、色だけ少し暗く/青くする
-                            // child.material.color.setHex(0xaaaaaa); 
+                            // グレーのマテリアルを適用
+                            child.material = new THREE.MeshStandardMaterial({
+                                color: 0x888888, // グレー
+                                roughness: 0.6,
+                                metalness: 0.4
+                            });
                         }
                     });
                     // ---------------------------
@@ -899,7 +890,7 @@
                  galleryContainer.innerHTML = `<p class="text-xs text-slate-500 col-span-2 text-center py-4">No gallery images</p>`;
             }
 
-            // 3Dタブの表示制御
+            // 3Dタブ & モデル切り替えUI
             const viewSwitcher = document.getElementById('view-switcher-container');
             const modelSelector = document.getElementById('model-selector-container');
             
