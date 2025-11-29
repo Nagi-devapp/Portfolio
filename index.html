@@ -165,6 +165,12 @@
             transition: transform 0.1s ease-out;
         }
         .tilt-content { transform: translateZ(20px); }
+        
+        /* Gallery Active State */
+        .gallery-item.active {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -351,8 +357,9 @@
                     </div>
 
                     <!-- Image Container -->
-                    <div id="modal-view-image" class="w-full h-[400px] md:h-full flex items-center justify-center">
+                    <div id="modal-view-image" class="w-full h-[400px] md:h-full flex items-center justify-center relative">
                         <img id="modal-img" src="" alt="Project" class="w-full h-full object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <!-- Fallback -->
                         <div class="hidden w-full h-full absolute inset-0 flex-col items-center justify-center text-slate-500 text-sm">
                             <i class="ph-duotone ph-image text-3xl mb-2"></i>No Image
                         </div>
@@ -412,7 +419,7 @@
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-        // --- データ定義 ---
+        // --- データ定義 (画像パスはプレースホルダー) ---
         const projects = [
             {
                 id: 1, title: "VR対応型 FPSゲーム", category: "vr", subtitle: "県プロコン「優良賞」受賞 / 代表作",
@@ -421,12 +428,11 @@
                 tech: "VR酔い防止のためフレームレート維持を最優先。オブジェクトのローポリ化とカリング処理を独自調整。",
                 stack: ["Unity", "C#", "Photon", "Maya"],
                 gallery: [
-                    { src: "./images/fps_weapon_ar.jpg", caption: "Assault Rifle" },
-                    { src: "./images/fps_weapon_hg.jpg", caption: "Handgun" },
-                    { src: "./images/fps_stage_wire.jpg", caption: "Stage Wire" }
+                    { src: "./images/vr_fps/vr_fps.png", caption: "Gameplay" },
+                    { src: "./images/vr_fps/vr_fps_weapon.png", caption: "Weapon Model" },
+                    { src: "./images/vr_fps/vr_fps_ui.png", caption: "Ui design" }
                 ],
                 has3D: true,
-                // .glb file names (without extension)
                 models: [
                     { id: 'hk45', name: 'HK45' },
                     { id: 'spas12', name: 'SPAS-12' },
@@ -439,11 +445,15 @@
                 title: "駅〜大学間バス時刻表",
                 category: "app",
                 subtitle: "Unity WebGL / 便利ツール",
-                image: "./images/bus_schedule.png", 
+                image: "./images/bus_schedule_icon.png", 
                 desc: "大学の送迎バスの発車時刻をカウントダウン表示するツール。Unity WebGLでビルドし、ブラウザ上で手軽に確認できるようにしました。",
                 tech: "Unity (WebGL), C#, uGUI, CSV Parser",
                 stack: ["Unity", "C#", "WebGL"],
-                gallery: [],
+                gallery: [
+                    { src: "./images/bus_schedule_icon.png", caption: "Main View" },
+                    { src: "./images/bus_schedule/bus_schedule.png", caption: "Mobile View" },
+                    { src: "./images/bus_schedule_3.png", caption: "Editor" }
+                ],
                 has3D: false
             },
             {
@@ -452,7 +462,12 @@
                 desc: "キャンパス内の現在地と目的地を入力すると、混雑状況を予測して最短経路を提示。",
                 tech: "NetworkXでダイクストラ法を実装。scikit-learnで混雑予測モデルを作成。",
                 stack: ["Python", "scikit-learn", "NetworkX"],
-                gallery: [], has3D: false
+                gallery: [
+                    { src: "./images/python_nav.png", caption: "Route Map" },
+                    { src: "./images/python_nav_2.png", caption: "Graph Data" },
+                    { src: "./images/python_nav_3.png", caption: "Analysis" }
+                ],
+                has3D: false
             },
             {
                 id: 3, title: "MailTalk", category: "app", subtitle: "モバイルアプリ / UI UX",
@@ -460,7 +475,12 @@
                 desc: "メールをチャット形式で表示・管理できるアプリ。",
                 tech: "IMAPプロトコル解析と独自パーサーによりメール本文をチャット風に整形。",
                 stack: ["Flutter", "Dart", "IMAP"],
-                gallery: [], has3D: false
+                gallery: [
+                    { src: "./images/mailtalk.png", caption: "View" },
+                    { src: "./images/mailtalk/chat_list.png", caption: "Chat_list UI" },
+                    { src: "./images/mailtalk/chat.png", caption: "Chat UI" }
+                ],
+                has3D: false
             },
             {
                 id: 4, title: "PCペット育成ゲーム", category: "vr", subtitle: "デスクトップマスコット",
@@ -468,7 +488,12 @@
                 desc: "デスクトップ常駐型の癒やし系育成ゲーム。",
                 tech: "Windows API制御で背景透過ウィンドウを実現。生活に溶け込むインタラクティブコンテンツ。",
                 stack: ["Unity", "C#", "Windows API"],
-                gallery: [], has3D: false
+                gallery: [
+                    { src: "./images/pc_pet.png", caption: "Desktop View" },
+                    { src: "./images/pc_pet_2.png", caption: "Interaction" },
+                    { src: "./images/pc_pet_3.png", caption: "Characters" }
+                ],
+                has3D: false
             },
             {
                 id: 5, title: "Wikipedia Golf", category: "app", subtitle: "Web Game / SPA",
@@ -476,7 +501,12 @@
                 desc: "リンクを辿りゴールを目指すブラウザゲーム。",
                 tech: "MediaWiki APIと非同期通信を利用した動的DOM生成。",
                 stack: ["JavaScript", "HTML/CSS", "API"],
-                gallery: [], has3D: false
+                gallery: [
+                    { src: "./images/wiki_golf/wiki_golf_home.png", caption: "icon" },
+                    { src: "./images/wiki_golf/wiki_golf_gameplay.png", caption: "Gameplay" },
+                    { src: "./images/wiki_golf/wiki_golf_result.png", caption: "Result" }
+                ],
+                has3D: false
             },
             {
                 id: 6, title: "NewDealPoker", category: "app", subtitle: "Realtime WebSocket",
@@ -484,15 +514,25 @@
                 desc: "エクイティ分配導入の新ルールポーカー。",
                 tech: "WebSocketでのリアルタイム同期とサーバーサイド役判定。",
                 stack: ["Node.js", "WebSocket", "JS"],
-                gallery: [], has3D: false
+                gallery: [
+                    { src: "./images/poker_game.png", caption: "Table View" },
+                    { src: "./images/poker_game_2.png", caption: "Betting UI" },
+                    { src: "./images/poker_game_3.png", caption: "Win Rate" }
+                ],
+                has3D: false
             },
             {
                 id: 7, title: "地域助け合いアプリ", category: "app", subtitle: "Matching App",
-                image: "./images/region_app.png",
+                image: "./images/chottohelp.png",
                 desc: "「手伝って」をマッチング。高齢者向けデザイン。",
                 tech: "Firebase Firestoreバックエンドとアクセシビリティ対応。",
                 stack: ["Flutter", "Firebase"],
-                gallery: [], has3D: false
+                gallery: [
+                    { src: "./images/chottohelp.png", caption: "Request List" },
+                    { src: "./images/chottohelp/chottohelp_list.png", caption: "Request List" },
+                    { src: "./images/chottohelp/chottohelp_request.png", caption: "Request Page" }
+                ],
+                has3D: false
             },
             {
                 id: 9, title: "Classroom Twin", category: "model", subtitle: "Digital Twin",
@@ -501,8 +541,9 @@
                 tech: "Fusion 360のCADデータとMayaモデリングの統合。",
                 stack: ["Maya", "Fusion360"],
                 gallery: [
-                     { src: "./images/class_render.jpg", caption: "Render" },
-                     { src: "./images/class_wire.jpg", caption: "Wireframe" }
+                     { src: "./images/classroom.png", caption: "Render" },
+                     { src: "./images/classroom_2.png", caption: "Wireframe" },
+                     { src: "./images/classroom_3.png", caption: "Details" }
                 ],
                 has3D: false
             }
@@ -514,6 +555,7 @@
         window.closeModal = closeModal;
         window.switchModalTab = switchModalTab;
         window.changeModel = changeModel;
+        window.setMainImage = setMainImage; // New Function
 
         // ==========================================
         // FEATURE 1: Tech Stack 3D Cloud
@@ -538,7 +580,6 @@
             controls.autoRotate = true;
             controls.autoRotateSpeed = 2.0;
 
-            // Tech Keywords (Three.js Removed)
             const skills = [
                 { name: "Unity", color: "#ffffff" }, { name: "C#", color: "#9b4f96" },
                 { name: "Python", color: "#3572A5" }, { name: "Maya", color: "#37A5CC" },
@@ -589,7 +630,6 @@
                 scene.add(sprite);
             });
 
-            // Particles
             const particlesGeom = new THREE.BufferGeometry();
             const particlesCount = 200;
             const posArray = new Float32Array(particlesCount * 3);
@@ -624,16 +664,14 @@
         let currentModelGroup = null;
         const loader = new GLTFLoader();
         
-        // 非同期でモデル読み込み（エラー表示強化版）
         function loadModelFile(type) {
             if (!modelViewerScene) return;
             
-            // ローディング表示ON
             const indicator = document.getElementById('loading-indicator');
             if(indicator) {
                 indicator.style.display = 'block';
                 indicator.innerText = 'Loading...';
-                indicator.style.color = '#38bdf8'; // Cyan
+                indicator.style.color = '#38bdf8';
             }
 
             if (currentModelGroup) {
@@ -641,13 +679,11 @@
                 currentModelGroup = null;
             }
 
-            // Load from ./models/filename.glb
             loader.load(
                 `./models/${type}.glb`,
                 (gltf) => {
                     currentModelGroup = gltf.scene;
                     
-                    // Auto Scale & Center
                     const box = new THREE.Box3().setFromObject(currentModelGroup);
                     const center = box.getCenter(new THREE.Vector3());
                     const size = box.getSize(new THREE.Vector3());
@@ -659,40 +695,29 @@
                     currentModelGroup.position.sub(center.multiplyScalar(scale));
                     currentModelGroup.position.y += Math.sin(Date.now() * 0.001) * 0.1; 
 
-                    // --- COLOR CHANGE LOGIC (Make it Gray) ---
                     currentModelGroup.traverse((child) => {
                         if (child.isMesh) {
-                            // グレーのマテリアルを適用
                             child.material = new THREE.MeshStandardMaterial({
-                                color: 0x888888, // グレー
+                                color: 0x888888,
                                 roughness: 0.6,
                                 metalness: 0.4
                             });
                         }
                     });
-                    // ---------------------------
 
                     modelViewerScene.add(currentModelGroup);
                     if(indicator) indicator.style.display = 'none';
                 },
-                (xhr) => {
-                    // 進捗表示（オプション）
-                    // console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-                },
+                undefined,
                 (error) => {
                     console.error('An error happened:', error);
                     if(indicator) {
-                        // 画面にエラー内容を表示
-                        indicator.style.color = '#ef4444'; // Red
-                        indicator.innerText = 'Load Error: See Console';
-                        
-                        // CORSエラーや404エラーの可能性を示唆
-                        alert(`モデルの読み込みに失敗しました。\n\nファイル: ./models/${type}.glb\n\n【考えられる原因】\n1. VS Codeの「Live Server」等を使わず直接開いている (CORSエラー)\n2. ファイル名やフォルダ名が間違っている (404)\n3. GLBファイルが破損している`);
+                        indicator.style.color = '#ef4444';
+                        indicator.innerText = 'Load Error';
                     }
                 }
             );
             
-            // UI update
             document.querySelectorAll('.model-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if(btn.dataset.model === type) btn.classList.add('active');
@@ -703,7 +728,7 @@
             const container = document.getElementById(containerId);
             if (!container) return;
             
-            container.innerHTML = ''; // clear previous canvas
+            container.innerHTML = ''; 
 
             modelViewerScene = new THREE.Scene();
             modelViewerScene.background = new THREE.Color(0x111827);
@@ -711,7 +736,6 @@
             const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
             modelViewerScene.add(gridHelper);
 
-            // Bright Lighting for imported models
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
             modelViewerScene.add(ambientLight);
             const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
@@ -736,10 +760,9 @@
             modelViewerControls = new OrbitControls(modelViewerCamera, modelViewerRenderer.domElement);
             modelViewerControls.target.set(0, 0, 0);
             modelViewerControls.enableDamping = true;
-            modelViewerControls.autoRotate = false; // 回転停止
+            modelViewerControls.autoRotate = false;
             modelViewerControls.autoRotateSpeed = 1.0;
 
-            // Load initial model
             loadModelFile(modelType);
 
             function animateViewer() {
@@ -761,7 +784,6 @@
             }
         }
         
-        // Expose change func wrapper
         function changeModel(type) {
             loadModelFile(type);
         }
@@ -770,6 +792,25 @@
         // UI Logic
         // ==========================================
         
+        // Helper to set main image and reset error state
+        function setMainImage(src, element) {
+            const mainImg = document.getElementById('modal-img');
+            const fallback = mainImg.nextElementSibling;
+            
+            mainImg.src = src;
+            mainImg.style.display = 'block';
+            fallback.style.display = 'none'; // Reset error display
+            
+            // Switch back to Image tab if in 3D mode
+            switchModalTab('image');
+
+            // Visual feedback for selected gallery item
+            if(element) {
+                document.querySelectorAll('.gallery-item').forEach(el => el.classList.remove('active'));
+                element.classList.add('active');
+            }
+        }
+
         function renderCreative(filter = 'all') {
             const grid = document.getElementById('works-grid');
             if(!grid) return;
@@ -857,7 +898,13 @@
             const p = projects.find(x => x.id === id);
             if (!p) return;
 
-            document.getElementById('modal-img').src = p.image;
+            // Initial Main Image Setup
+            const mainImg = document.getElementById('modal-img');
+            const fallback = mainImg.nextElementSibling;
+            mainImg.src = p.image;
+            mainImg.style.display = 'block';
+            fallback.style.display = 'none';
+
             document.getElementById('modal-title').innerText = p.title;
             document.getElementById('modal-sub').innerText = p.subtitle;
             document.getElementById('modal-desc').innerText = p.desc;
@@ -870,12 +917,15 @@
             document.getElementById('modal-tags').innerHTML = 
                 `<span class="px-2 py-1 rounded bg-cyan-500/20 text-cyan-400 text-xs font-bold uppercase">${p.category}</span>`;
 
+            // Gallery Generation with Click Handler
             const galleryContainer = document.getElementById('modal-gallery');
             galleryContainer.innerHTML = '';
             if (p.gallery && p.gallery.length > 0) {
                 p.gallery.forEach(item => {
                     const div = document.createElement('div');
-                    div.className = 'bg-black/50 rounded-lg overflow-hidden border border-white/5 cursor-pointer hover:border-cyan-500 transition-colors';
+                    div.className = 'gallery-item bg-black/50 rounded-lg overflow-hidden border border-white/5 cursor-pointer hover:border-cyan-500 transition-colors';
+                    div.onclick = function() { setMainImage(item.src, this); };
+                    
                     div.innerHTML = `
                         <div class="h-24 relative flex items-center justify-center bg-black">
                              <img src="${item.src}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -943,7 +993,7 @@
                 view3D.classList.remove('hidden');
                 
                 const p = projects.find(x => x.id === currentProjectId);
-                const defaultModel = p.models ? p.models[0].id : 'hk45';
+                const defaultModel = (p && p.models) ? p.models[0].id : 'hk45';
                 
                 requestAnimationFrame(() => { 
                     initModelViewer('model-viewer-container', defaultModel); 
