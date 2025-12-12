@@ -171,6 +171,18 @@
             border-color: #38bdf8;
             box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
         }
+        
+        /* Play Icon Overlay for Gallery */
+        .play-icon-overlay {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 32px; height: 32px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; pointer-events: none;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -343,7 +355,7 @@
             </button>
             
             <div class="flex flex-col md:flex-row min-h-[500px]">
-                <!-- 左側：ビューワーエリア (Image or 3D) -->
+                <!-- 左側：ビューワーエリア (Image or 3D or Video) -->
                 <div class="md:w-3/5 p-0 flex flex-col bg-black relative">
                     
                     <!-- 3D View Switcher (右下配置) -->
@@ -356,22 +368,29 @@
                         </button>
                     </div>
 
-                    <!-- Image Container -->
-                    <div id="modal-view-image" class="w-full h-[400px] md:h-full flex items-center justify-center relative">
-                        <img id="modal-img" src="" alt="Project" class="w-full h-full object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <!-- Media Container (Image/Video) -->
+                    <div id="modal-view-image" class="w-full h-[400px] md:h-full flex items-center justify-center relative bg-black">
+                        <!-- Image Element -->
+                        <img id="modal-img" src="" alt="Project" class="w-full h-full object-contain" onerror="this.style.display='none'; document.getElementById('media-fallback').style.display='flex';">
+                        
+                        <!-- Video Element -->
+                        <video id="modal-video" class="w-full h-full object-contain hidden" loop muted playsinline controls>
+                            <source src="" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+
                         <!-- Fallback -->
-                        <div class="hidden w-full h-full absolute inset-0 flex-col items-center justify-center text-slate-500 text-sm">
-                            <i class="ph-duotone ph-image text-3xl mb-2"></i>No Image
+                        <div id="media-fallback" class="hidden w-full h-full absolute inset-0 flex-col items-center justify-center text-slate-500 text-sm">
+                            <i class="ph-duotone ph-image text-3xl mb-2"></i>
+                            <span id="fallback-text">No Image/Video</span>
                         </div>
                     </div>
 
                     <!-- 3D Viewer Container -->
                     <div id="modal-view-3d" class="w-full h-[400px] md:h-full hidden relative bg-slate-950">
-                        <!-- Three.js Canvas will be inserted here -->
                         <div id="model-viewer-container" class="w-full h-full"></div>
                         <div id="loading-indicator">Loading...</div>
                         
-                        <!-- Model Selector (Bottom Center) -->
                         <div id="model-selector-container" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20 model-selector hidden">
                             <!-- Buttons injected by JS -->
                         </div>
@@ -419,7 +438,7 @@
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-        // --- データ定義 (画像パスはプレースホルダー) ---
+        // --- データ定義 ---
         const projects = [
             {
                 id: 1, title: "VR対応型 FPSゲーム", category: "vr", subtitle: "県プロコン「優良賞」受賞 / 代表作",
@@ -441,7 +460,7 @@
                 ]
             },
             {
-                id: 8,
+                id: 2,
                 title: "駅〜大学間バス時刻表",
                 category: "app",
                 subtitle: "Unity WebGL / 便利ツール",
@@ -452,25 +471,25 @@
                 gallery: [
                     { src: "./images/bus_schedule_icon.png", caption: "Main View" },
                     { src: "./images/bus_schedule/bus_schedule.png", caption: "Mobile View" },
-                    { src: "./images/bus_schedule_3.png", caption: "Editor" }
+                    { src: "./images/bus_schedule/bus_schedule_demo.mp4", caption: "Demo Video" }
                 ],
                 has3D: false
             },
             {
-                id: 2, title: "学内最短経路ナビ", category: "app", subtitle: "Python / 機械学習",
+                id: 3, title: "学内最短経路ナビ", category: "app", subtitle: "Python / 機械学習",
                 image: "./images/python_nav.png",
                 desc: "キャンパス内の現在地と目的地を入力すると、混雑状況を予測して最短経路を提示。",
                 tech: "NetworkXでダイクストラ法を実装。scikit-learnで混雑予測モデルを作成。",
                 stack: ["Python", "scikit-learn", "NetworkX"],
                 gallery: [
-                    { src: "./images/python_nav.png", caption: "Route Map" },
-                    { src: "./images/python_nav_2.png", caption: "Graph Data" },
-                    { src: "./images/python_nav_3.png", caption: "Analysis" }
+                    { src: "./images/python_nav.png", caption: "Main View" },
+                    { src: "./images/python_nav/graph.png", caption: "Graph Data" },
+                    { src: "./images/python_nav/demo.png", caption: "Demo" }
                 ],
                 has3D: false
             },
             {
-                id: 3, title: "MailTalk", category: "app", subtitle: "モバイルアプリ / UI UX",
+                id: 4, title: "MailTalk", category: "app", subtitle: "モバイルアプリ / UI UX",
                 image: "./images/mailtalk.png",
                 desc: "メールをチャット形式で表示・管理できるアプリ。",
                 tech: "IMAPプロトコル解析と独自パーサーによりメール本文をチャット風に整形。",
@@ -483,7 +502,7 @@
                 has3D: false
             },
             {
-                id: 4, title: "PCペット育成ゲーム", category: "vr", subtitle: "デスクトップマスコット",
+                id: 5, title: "PCペット育成ゲーム", category: "app", subtitle: "デスクトップマスコット",
                 image: "./images/pc_pet.png",
                 desc: "デスクトップ常駐型の癒やし系育成ゲーム。",
                 tech: "Windows API制御で背景透過ウィンドウを実現。生活に溶け込むインタラクティブコンテンツ。",
@@ -496,33 +515,32 @@
                 has3D: false
             },
             {
-                id: 5, title: "Wikipedia Golf", category: "app", subtitle: "Web Game / SPA",
+                id: 6, title: "Wikipedia Golf", category: "app", subtitle: "Web Game / SPA",
                 image: "./images/wiki_golf.png",
                 desc: "リンクを辿りゴールを目指すブラウザゲーム。",
                 tech: "MediaWiki APIと非同期通信を利用した動的DOM生成。",
                 stack: ["JavaScript", "HTML/CSS", "API"],
                 gallery: [
-                    { src: "./images/wiki_golf/wiki_golf_home.png", caption: "icon" },
+                    { src: "./images/wiki_golf/wiki_golf_home.png", caption: "Icon" },
                     { src: "./images/wiki_golf/wiki_golf_gameplay.png", caption: "Gameplay" },
                     { src: "./images/wiki_golf/wiki_golf_result.png", caption: "Result" }
                 ],
                 has3D: false
             },
             {
-                id: 6, title: "NewDealPoker", category: "app", subtitle: "Realtime WebSocket",
+                id: 7, title: "NewDealPoker", category: "app", subtitle: "Realtime WebSocket",
                 image: "./images/poker_game.png",
                 desc: "エクイティ分配導入の新ルールポーカー。",
                 tech: "WebSocketでのリアルタイム同期とサーバーサイド役判定。",
                 stack: ["Node.js", "WebSocket", "JS"],
                 gallery: [
-                    { src: "./images/poker_game.png", caption: "Table View" },
-                    { src: "./images/poker_game_2.png", caption: "Betting UI" },
-                    { src: "./images/poker_game_3.png", caption: "Win Rate" }
+                    { src: "./images/poker_game.png", caption: "Icon" },
+                    { src: "./images/poker_game/poker_game_demo.png", caption: "Game Demo" },
                 ],
                 has3D: false
             },
             {
-                id: 7, title: "地域助け合いアプリ", category: "app", subtitle: "Matching App",
+                id: 8, title: "地域助け合いアプリ", category: "app", subtitle: "Matching App",
                 image: "./images/chottohelp.png",
                 desc: "「手伝って」をマッチング。高齢者向けデザイン。",
                 tech: "Firebase Firestoreバックエンドとアクセシビリティ対応。",
@@ -555,7 +573,7 @@
         window.closeModal = closeModal;
         window.switchModalTab = switchModalTab;
         window.changeModel = changeModel;
-        window.setMainImage = setMainImage; // New Function
+        window.setMainContent = setMainContent;
 
         // ==========================================
         // FEATURE 1: Tech Stack 3D Cloud
@@ -792,14 +810,45 @@
         // UI Logic
         // ==========================================
         
-        // Helper to set main image and reset error state
-        function setMainImage(src, element) {
+        // Helper to set main content (Image or Video)
+        function setMainContent(src, element) {
             const mainImg = document.getElementById('modal-img');
-            const fallback = mainImg.nextElementSibling;
+            const mainVideo = document.getElementById('modal-video');
+            const fallback = document.getElementById('media-fallback');
             
-            mainImg.src = src;
-            mainImg.style.display = 'block';
-            fallback.style.display = 'none'; // Reset error display
+            // 拡張子で動画判定（大文字小文字無視）
+            const isVideo = src.toLowerCase().endsWith('.mp4');
+
+            if (isVideo) {
+                mainImg.style.display = 'none';
+                mainImg.classList.add('hidden');
+                
+                mainVideo.src = src;
+                mainVideo.classList.remove('hidden');
+                mainVideo.style.display = 'block';
+                mainVideo.load(); // Force reload to ensure new src plays
+                
+                // Play with promise handling
+                const playPromise = mainVideo.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log('Auto-play prevented:', error);
+                    });
+                }
+                
+                fallback.style.display = 'none';
+            } else {
+                mainVideo.pause();
+                mainVideo.src = ""; // Unload
+                mainVideo.style.display = 'none';
+                mainVideo.classList.add('hidden');
+                
+                mainImg.src = src;
+                mainImg.classList.remove('hidden');
+                mainImg.style.display = 'block';
+                
+                fallback.style.display = 'none';
+            }
             
             // Switch back to Image tab if in 3D mode
             switchModalTab('image');
@@ -898,12 +947,9 @@
             const p = projects.find(x => x.id === id);
             if (!p) return;
 
-            // Initial Main Image Setup
-            const mainImg = document.getElementById('modal-img');
-            const fallback = mainImg.nextElementSibling;
-            mainImg.src = p.image;
-            mainImg.style.display = 'block';
-            fallback.style.display = 'none';
+            // Initial Main Content Setup (using first gallery item or default image)
+            const firstMedia = (p.gallery && p.gallery.length > 0) ? p.gallery[0].src : p.image;
+            setMainContent(firstMedia, null);
 
             document.getElementById('modal-title').innerText = p.title;
             document.getElementById('modal-sub').innerText = p.subtitle;
@@ -917,23 +963,35 @@
             document.getElementById('modal-tags').innerHTML = 
                 `<span class="px-2 py-1 rounded bg-cyan-500/20 text-cyan-400 text-xs font-bold uppercase">${p.category}</span>`;
 
-            // Gallery Generation with Click Handler
+            // Gallery Generation
             const galleryContainer = document.getElementById('modal-gallery');
             galleryContainer.innerHTML = '';
             if (p.gallery && p.gallery.length > 0) {
-                p.gallery.forEach(item => {
+                p.gallery.forEach((item, index) => {
+                    const isVideo = item.src.toLowerCase().endsWith('.mp4');
                     const div = document.createElement('div');
-                    div.className = 'gallery-item bg-black/50 rounded-lg overflow-hidden border border-white/5 cursor-pointer hover:border-cyan-500 transition-colors';
-                    div.onclick = function() { setMainImage(item.src, this); };
+                    div.className = `gallery-item bg-black/50 rounded-lg overflow-hidden border border-white/5 cursor-pointer hover:border-cyan-500 transition-colors ${index===0 ? 'active' : ''}`;
+                    div.onclick = function() { setMainContent(item.src, this); };
                     
-                    div.innerHTML = `
-                        <div class="h-24 relative flex items-center justify-center bg-black">
-                             <img src="${item.src}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                             <div class="hidden w-full h-full absolute inset-0 flex-col items-center justify-center text-slate-600 text-[10px]">
-                                <i class="ph-duotone ph-image text-xl"></i>
-                             </div>
-                        </div>
-                    `;
+                    let content = '';
+                    if (isVideo) {
+                        content = `
+                            <div class="h-24 relative flex items-center justify-center bg-black">
+                                <video src="${item.src}" class="w-full h-full object-cover opacity-50"></video>
+                                <div class="play-icon-overlay"><i class="ph-fill ph-play"></i></div>
+                            </div>
+                        `;
+                    } else {
+                        content = `
+                            <div class="h-24 relative flex items-center justify-center bg-black">
+                                 <img src="${item.src}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                 <div class="hidden w-full h-full absolute inset-0 flex-col items-center justify-center text-slate-600 text-[10px]">
+                                    <i class="ph-duotone ph-image text-xl"></i>
+                                 </div>
+                            </div>
+                        `;
+                    }
+                    div.innerHTML = content;
                     galleryContainer.appendChild(div);
                 });
             } else {
@@ -959,8 +1017,6 @@
                 viewSwitcher.style.display = 'none';
                 modelSelector.classList.add('hidden');
             }
-            // Reset Tab to Image
-            switchModalTab('image');
 
             modalOverlay.classList.remove('modal-closed');
             modalOverlay.classList.add('modal-open');
@@ -971,6 +1027,12 @@
             modalOverlay.classList.remove('modal-open');
             modalOverlay.classList.add('modal-closed');
             document.body.style.overflow = '';
+            
+            // Stop video
+            const mainVideo = document.getElementById('modal-video');
+            mainVideo.pause();
+            mainVideo.src = "";
+            
             disposeModelViewer();
         }
 
@@ -979,6 +1041,7 @@
             const btn3D = document.getElementById('tab-3d');
             const viewImage = document.getElementById('modal-view-image');
             const view3D = document.getElementById('modal-view-3d');
+            const mainVideo = document.getElementById('modal-video');
 
             if (tab === 'image') {
                 btnImage.classList.add('active');
@@ -991,6 +1054,8 @@
                 btnImage.classList.remove('active');
                 viewImage.classList.add('hidden');
                 view3D.classList.remove('hidden');
+                // Pause video when switching to 3D
+                mainVideo.pause();
                 
                 const p = projects.find(x => x.id === currentProjectId);
                 const defaultModel = (p && p.models) ? p.models[0].id : 'hk45';
